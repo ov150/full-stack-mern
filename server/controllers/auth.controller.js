@@ -25,36 +25,33 @@ const signup = async (req, res, next) =>{
 const signin =  async (req, res, next) => {
     try {
         const { email, password} = req.body;
-        if(!username || !password || username === "" || password === ""){
-            next(errorHandler(400, 'all fields are required'));
+        const userExist = await User.findOne({email:email});
+        if(!userExist){
+            return res.status(400).json({
+                success:true,
+                message: "user not found",
+            })
         }
-        const validUser = await User.findOne({email});
-        if(!validUser){
-            return next(errorHandler(404, 'user not found'));
+        if(!password){
+            return res.status(400).json({
+                success:false,
+                message:"please enter password",
+            })
         }
-
-        return res.json({
-            message:"user login",
-            validUser
+        // console.log(password);
+        // console.log(userExist.password);  
+        if(password !== userExist.password){
+            return res.json({
+                message:"incorrect password"
+            })
+        }      
+        return res.status(200).json({
+            message:"user login successfully"
         })
-        // if(password !== validUser.password){
-        //     return next(errorHandler(400, 'invalid password'))
-        // }
-
-        // const token = jwt.sign(
-        //     {id: validUser._id}, 
-        //     process.env.JWT_SECRET,
-        
-        // )
-
-        // const { password: pass, ...rest} = validUser._doc;
-
-        // res.status(200).cockie('access_token', token, {
-        //     httpOnly:true
-        // }).json(validUser)
     } catch (error) {
-        next(error)
+        console.log(error);
     }
+
 }
 
 export {
