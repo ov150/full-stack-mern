@@ -1,29 +1,19 @@
-import { useEffect, useState } from 'react'
-import axios from "axios";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './App.css'
+import Home from "./pages/Home";
+import SignUp from "./pages/SignUp";
+import SignIn from "./pages/SignIn";
+import Header from "./components/Header";
 function App() {
-  const [jokes , setJokes] = useState([]);
-  useEffect(()=>{
-    axios.get('/api/jokes')
-    .then((response)=>{
-      setJokes(response.data)
-    })
-    .catch((error)=>{
-      console.log(error);
-    })
-  }, [])
   return (
-    <>
-    <p>jokes : {jokes.length}</p>
-    {
-      jokes.map((joke, index)=>{
-        return <div key={index}>
-          <h5>{joke.title}</h5>
-          <p>{joke.content}</p>
-        </div>
-      })
-    }
-    </>
+    <BrowserRouter>
+    <Header />
+    <Routes >
+      <Route path="/" element={<Home/>}/>
+      <Route path="/sign-up" element={<SignUp/>}/>
+      <Route path="/sign-in" element={<SignIn/>}/>
+    </Routes>
+    </BrowserRouter>
   )
 }
 
