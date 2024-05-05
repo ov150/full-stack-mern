@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch , useSelector} from "react-redux";
+import { signInStart, signInSuccess, signInFailure } from "../redux/user/userSlice";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
+  const {loading, error:errorMessage} = useSelector(state => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange =(event) =>{
     setFormData({
@@ -16,6 +20,7 @@ const SignIn = () => {
   const handleSubmit = async (event) =>{
     event.preventDefault();
     try {
+      dispatch(signInStart());
       const response = await fetch('/api/v1/auth/signin', {
         method: 'POST',
         headers: {
@@ -24,13 +29,18 @@ const SignIn = () => {
         body:JSON.stringify(formData),
       });
       const data = response.json();
+
       console.log(data);
+      if(data.success === false){
+        dispatch(signInFailure(data.message));
+      }
 
       if(response.ok){
+        dispatch(signInSuccess(data));
         navigate('/')
       }
     } catch (error) {
-      console.log(error);
+      dispatch(signInFailure(error.message));
     }
   }
   return (
@@ -57,7 +67,19 @@ const SignIn = () => {
         onChange={handleChange}
       />
       </div>
-      <button type="submit"> Sign In</button>
+      <button type="submit" >
+      {
+        loading ? (
+          <span> loading...</span>
+        ) : ( <span>sign In</span> )
+      } </button>
+      {
+        errorMessage && (
+          <div>
+            {errorMessage}
+          </div>
+        )
+      }
     </form>
     </>
   )

@@ -2,10 +2,10 @@ import User from "../models/user.model.js"
 import { errorHandler } from "../utils/error.js";
 import jwt from "jsonwebtoken";
 
-const signup = async (req, res, next) =>{
+const signup = async (req, res, next) => {
     try {
-        const {username, email, password} = req.body;
-        if(!username || !email || !password || username === "" || email === "" || password === ""){
+        const { username, email, password } = req.body;
+        if (!username || !email || !password || username === "" || email === "" || password === "") {
             next(errorHandler(400, 'All fields are required'));
         }
         const newUser = new User({
@@ -15,41 +15,49 @@ const signup = async (req, res, next) =>{
         })
         await newUser.save();
         return res.json({
-            message:"user created successfully",
+            message: "user created successfully",
         })
     } catch (error) {
         next(error);
     }
 }
 
-const signin =  async (req, res, next) => {
+const signin = async (req, res, next) => {
     try {
-        const { email, password} = req.body;
-        const userExist = await User.findOne({email:email});
-        if(!userExist){
+        const { email, password } = req.body;
+        const userExist = await User.findOne({ email: email });
+        if (!userExist) {
             return res.status(400).json({
-                success:true,
+                success: true,
                 message: "user not found",
             })
         }
-        if(!password){
+        if (!password) {
             return res.status(400).json({
-                success:false,
-                message:"please enter password",
+                success: false,
+                message: "please enter password",
             })
         }
         // console.log(password);
         // console.log(userExist.password);  
-        if(password !== userExist.password){
+        if (password !== userExist.password) {
             return res.json({
-                message:"incorrect password"
+                message: "incorrect password"
             })
-        }      
-        return res.status(200).json({
-            message:"user login successfully"
-        })
+        }
+        const token = jwt.sign(
+            { id: userExist._id },
+            process.env.JWT_SECRET
+        );
+
+        res
+            .status(200)
+            .cookie('access_token', token, {
+                httpOnly: true,
+            })
+            .json(userExist);
     } catch (error) {
-        console.log(error);
+        next(error);
     }
 
 }
